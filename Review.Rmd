@@ -1,0 +1,11 @@
+All of your files seems correct and clean
+I had to install the tidyverse package and load the readr program, but after that it was all good.
+I also would suggest just reading the files from the internet. it just makes things easier by not having to deal with paths and downloaded files.
+
+Your graphs were different from mine but similar. I plotted the frequency of snps for chromosomes, but you plotted the frequency of snps for groups. It looks right for that though.
+
+Also, for the second plot, I thought it was pretty cool how you assigned a value to each of the homozygous snps and plotted the number of times each value showed up. you melted the data sets well. I really struggled with that. I assigned a loop that replaced stuff with values to a loop, then I plotted it out. I had to get a rough idea of the loops from online and had a buddy work me through it. your way seemed to work way better.
+
+I didn't know about tidyverse. Seems pretty cool. I also didn't know how to write tables to a specific path. pretty neat.
+
+-Dr. Lavrov, I say this is A+ work!

@@ -1,0 +1,112 @@
+
+
+```{r}
+install.packages("tidyverse")
+library(readr)
+library(ggplot2)
+library(reshape2)
+```
+
+
+```{r}
+
+
+fang <- read_delim("https://raw.githubusercontent.com/EEOB-BioData/BCB546X-Fall2017/master/UNIX_Assignment/fang_et_al_genotypes.txt", "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE)
+
+snp <- read_delim("https://raw.githubusercontent.com/EEOB-BioData/BCB546X-Fall2017/master/UNIX_Assignment/snp_position.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+
+maize <- fang[fang$X3 == "Group" | fang$X3 == "ZMMIL" | fang$X3 == "ZMMLR" | fang$X3 == "ZMMMR",]
+teosinte <- fang[fang$X3 == "Group" | fang$X3 == "ZMPBA" | fang$X3 == "ZMPIL" | fang$X3 == "ZMPJA",]
+
+t_maize <- t(maize)
+t_teosinte <- t(teosinte)
+
+colnames(t_maize) <- t_maize[1,]
+t_maize <- t_maize[-1:-3,]
+head(t_maize)
+NROW(t_maize)
+
+colnames(t_teosinte) <- t_teosinte[1,]
+t_teosinte <- t_teosinte[-1:-3,]
+head(t_teosinte)
+NROW(t_teosinte)
+
+colnames(t_maize)[1] <- "SNP_ID"
+
+colnames(t_teosinte)[1] <- "SNP_ID"
+
+maize_merged <- merge(snp, t_maize, by = "SNP_ID")
+
+teosinte_merged <- merge(snp, t_teosinte, by = "SNP_ID")
+
+maize_merged <- maize_merged[c(1,3,4,2,5:1588)]
+
+teosinte_merged <- teosinte_merged[c(1,3,4,2,5:990)]
+
+maize_merged$Position[maize_merged$Position == "multiple"] <- 0
+maize_merged$Position[maize_merged$Position == "unknown"] <- NA
+maize_merged$Chromosome[maize_merged$Chromosome == "multiple"] <- 0
+maize_merged$Chromosome[maize_merged$Chromosome == "unknown"] <- NA
+
+teosinte_merged$Position[teosinte_merged$Position == "multiple"] <- 0
+teosinte_merged$Position[teosinte_merged$Position == "unknown"] <- NA
+teosinte_merged$Chromosome[teosinte_merged$Chromosome == "multiple"] <- 0
+teosinte_merged$Chromosome[teosinte_merged$Chromosome == "unknown"] <- NA
+
+maize_merged$Position = as.numeric(as.character(maize_merged$Position))
+maize_merged$Chromosome = as.numeric(as.character(maize_merged$Chromosome))
+teosinte_merged$Position = as.numeric(as.character(teosinte_merged$Position))
+teosinte_merged$Chromosome = as.numeric(as.character(teosinte_merged$Chromosome))
+
+maize_1 = maize_merged[maize_merged$Chromosome == 1,]
+maize_1 = maize_1[order(maize_1$Position),]
+maize_1_ascend = data.frame(lapply(maize_1, function(x){gsub("\\?\\/\\?", "\\?", x)}))
+write.table(maize_1_ascend, "C:/Users/lkoest12.IASTATE/Documents/Forked_Repo_Test/maize_1_increase.txt", sep = "\t")
+maize_1 = maize_1[order(rev(maize_1$Position)),]
+maize_1_descend = data.frame(lapply(maize_1, function(x){gsub("\\?\\/\\?", "\\-", x)}))
+write.table(maize_1_descend, "C:/Users/lkoest12.IASTATE/Documents/Forked_Repo_Test/maize_1_descend.txt", sep = "\t")
+
+fang_melt <- melt(fang)
+snp_melt <- melt(snp)
+
+```
+
+
+```{r}
+fang_melt <- melt(fang)
+snp_melt <- melt(snp)
+
+num_snps <- as.data.frame(table(snp$Chromosome))
+num_snps
+num_snps <- num_snps[c(1,3:10,2,11:12),]
+num_snps$Var1 <- as.character(num_snps$Var1)
+num_snps$Var1 <- factor(num_snps$Var1, levels=unique(num_snps$Var1))
+ggplot(num_snps, aes(Var1,Freq)) + geom_point() + xlab("Chromosome") + ylab("Number of SNPs") + ggtitle("Number of SNPs per Chromosome") + theme(plot.title = element_text(hjust = 0.5))
+
+num_groups <- as.data.frame(table(fang$X3))
+num_groups
+num_groups <- num_groups[-1,]
+ggplot(num_groups, aes(Var1,Freq)) + geom_point() + xlab("Group") + ylab("Number of Observations") + ggtitle("Number of Observations per Group") + theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+
+
+```{r}
+colnames(fang) <- fang[1,]
+fang <- fang[-1,]
+
+fang <- fang[-1,]
+
+fang$abph1.20_num <- ""
+fang$abph1.20_num[fang$abph1.20 == "C/C"] <- 2
+fang$abph1.20_num[fang$abph1.20 == "G/G"] <- 2
+fang$abph1.20_num[fang$abph1.20 == "C/G"] <- 1
+fang$abph1.20_num[fang$abph1.20 == "G/C"] <- 1
+fang$abph1.20_num[fang$abph1.20 == "?/?"] <- NA
+
+ggplot(fang, aes(x=Group, fill = abph1.20_num)) + geom_bar(aes(y = (..count..)/sum(..count..)),position = position_dodge(width = 0.5)) + scale_y_continuous(breaks = c(0,0.05,0.12,0.2,0.25,0.3,0.35)) + ylab("Frequency") + ggtitle("Homozygous vs Heterozygous Frequency in the abph1.20 SNP by Group") + theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+'
